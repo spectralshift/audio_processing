@@ -11,7 +11,7 @@
 6 - Run the annotate.py file. Check and rate each snippet. 
 
   - Guidance: Good = can be used now, OK = needs processing (eg: background), Bad = unusable (eg: wrong person, incoherence, unsuitable)
-  - 
+    
 7 - Copy the audio and the annotation file you wish to process (eg: good only) and place it into a new folder.
     
 8 - Run the process_audio.py script on the new folder. Note: this will split the file into the chunks in the annotation file.
