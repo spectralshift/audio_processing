@@ -24,7 +24,6 @@ def validate_json_data(data, json_filename):
             if key not in seg:
                 print(f"Error: JSON file '{json_filename}' is missing key '{key}' in one of the segments.")
                 return False
-        # Optionally, check that start and end are numeric values.
         try:
             float(seg['start'])
             float(seg['end'])
@@ -39,6 +38,7 @@ def process_json_file(audio_path, json_path):
     - Validates the JSON file.
     - Creates an output directory named after the JSON file (without extension).
     - For each segment that meets MIN_DURATION, extracts the audio using ffmpeg.
+    - Creates a metadata JSON file with keys "text" and "audio_file" for each snippet.
     - Logs the steps (checking, processing, outputting, closing).
     """
     json_base = os.path.splitext(os.path.basename(json_path))[0]
@@ -80,9 +80,11 @@ def process_json_file(audio_path, json_path):
         print(f"No valid segments found in '{json_path}'.")
         return
 
-    #audio_ext = os.path.splitext(audio_path)[1]
     audio_base = os.path.splitext(os.path.basename(audio_path))[0]
     print(f"Processing JSON file '{json_path}' with {len(valid_segments)} valid segment(s).")
+
+    # List to hold metadata for each processed segment.
+    metadata = []
 
     for idx, segment in enumerate(valid_segments):
         start_time = float(segment['start'])
@@ -102,14 +104,28 @@ def process_json_file(audio_path, json_path):
             "-ar", "24000",         # Set the audio sampling rate to 24 kHz.
             "-ac", "1",             # Convert audio to mono.
             "-sample_fmt", "s16",   # Set the sample format to 16-bit.
-            output_file           # Make sure this has a .wav extension.
+            output_file             # Make sure this has a .wav extension.
         ]
         print(f"Processing segment {idx+1}: extracting to '{output_filename}'")
         try:
             subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             print(f"Output segment saved: {output_file}")
+            # Append metadata: original text and generated audio file name.
+            metadata.append({
+                "text": segment["text"],
+                "audio_file": output_filename
+            })
         except subprocess.CalledProcessError as e:
             print(f"Error processing segment {idx+1} in '{json_path}': {e}")
+
+    # Save the metadata JSON file in the same directory as the audio files.
+    metadata_path = os.path.join(out_dir, "metadata.json")
+    try:
+        with open(metadata_path, "w", encoding="utf-8") as f:
+            json.dump(metadata, f, indent=2)
+        print(f"Metadata JSON saved: {metadata_path}")
+    except Exception as e:
+        print(f"Error saving metadata JSON file '{metadata_path}': {e}")
 
     print(f"Finished processing JSON file '{json_path}'.\nClosing file.")
 
