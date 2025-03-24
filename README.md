@@ -1,3 +1,5 @@
+A super simple set of personal python files for an audio training pipeline.
+
 1 - You have a video or audio clip. If video, strip audio. Now you have an audio file.
 
 2 - Do the basic annotation. Recommended in ElevenLabs using speech to text (stt)
