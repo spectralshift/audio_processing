@@ -21,7 +21,17 @@ rely on `ffmpeg` being installed and available on your `PATH`.
     
 7 - Copy the audio and the annotation file you wish to process (eg: good only) and place it into a new folder.
     
-8 - Run the process_audio.py script on the new folder. Note: this will split the file into the chunks in the annotation file.
+8 - Run the `process_audio.py` script on the new folder or use the GUI with `process_audio_gui.py`. Both split the file into the chunks in the annotation file.
+
+### GUI Usage
+
+Launch the graphical interface with:
+
+```
+python process_audio_gui.py
+```
+
+Use **Browse** to select the folder that contains your audio file and JSON annotations. Enable **Verbose** for additional output and press **Start** to begin processing. Progress messages appear in the text box at the bottom of the window.
 
 
 ![Alt text](workflow.png)

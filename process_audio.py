@@ -147,29 +147,12 @@ def process_json_file(audio_path, json_path, verbose=False):
 
     print(f"Finished processing JSON file '{json_path}'.\nClosing file.")
 
-def main():
-    """
-    Main function:
-    - Expects a subfolder argument.
-    - Validates that exactly one audio file exists in the folder.
-    - Processes all JSON files in the folder sequentially.
-    """
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Split audio based on a JSON annotation file.")
-    parser.add_argument("subfolder", help="Subfolder containing the audio and JSON files")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
-
-    args = parser.parse_args()
-
-    subfolder = args.subfolder
-    verbose = args.verbose
-    parent_dir = os.getcwd()
-    process_dir = os.path.join(parent_dir, subfolder)
+def process_directory(process_dir, verbose=False):
+    """Process the given directory of audio and JSON files."""
 
     if not os.path.isdir(process_dir):
         print(f"Error: The folder '{process_dir}' does not exist.")
-        sys.exit(1)
+        return
 
     files = os.listdir(process_dir)
 
@@ -183,7 +166,7 @@ def main():
 
     if len(audio_files) != 1:
         print(f"Error: There must be exactly one audio file in the directory. Found {len(audio_files)}.")
-        sys.exit(1)
+        return
 
     audio_path = audio_files[0]
     print(f"Found audio file: {audio_path}")
@@ -196,12 +179,30 @@ def main():
     ]
     if not json_files:
         print("Error: No JSON files found in the directory.")
-        sys.exit(1)
+        return
 
     print(f"Found {len(json_files)} JSON file(s) to process.")
 
     for json_file in json_files:
         process_json_file(audio_path, json_file, verbose=verbose)
+
+
+def main():
+    """CLI entry point."""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Split audio based on a JSON annotation file.")
+    parser.add_argument("subfolder", help="Subfolder containing the audio and JSON files")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
+
+    args = parser.parse_args()
+
+    subfolder = args.subfolder
+    verbose = args.verbose
+    parent_dir = os.getcwd()
+    process_dir = os.path.join(parent_dir, subfolder)
+
+    process_directory(process_dir, verbose=verbose)
 
 if __name__ == "__main__":
     main()
