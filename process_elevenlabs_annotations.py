@@ -1,6 +1,12 @@
 import json
 import argparse
 import sys
+from typing import List, Dict
+
+def load_data(path: str) -> List[Dict]:
+    """Load JSON data from ``path`` and return it."""
+    with open(path, "r", encoding="utf-8") as infile:
+        return json.load(infile)
 
 def choose_speaker(data):
     """
@@ -48,7 +54,7 @@ def choose_speaker(data):
         except ValueError:
             print("Invalid input. Please enter a number.")
 
-def process_data(data):
+def process_sentences(data):
     """
     Process the input data to filter, sort, and combine records into sentences.
     
@@ -106,8 +112,13 @@ def process_data(data):
         {**s, "text": s.get("text", "").strip()}
         for s in sentences if s.get("text", "").strip() != ""
     ]
-    
+
     return processed_sentences
+
+def save_data(data: List[Dict], path: str) -> None:
+    """Save ``data`` to ``path`` as JSON."""
+    with open(path, "w", encoding="utf-8") as outfile:
+        json.dump(data, outfile, indent=2)
 
 def main():
     parser = argparse.ArgumentParser(
@@ -117,12 +128,10 @@ def main():
     parser.add_argument("output_file", help="Path to the output JSON file")
     args = parser.parse_args()
     
-    # Load the JSON data from the input file.
     try:
-        with open(args.input_file, "r", encoding="utf-8") as infile:
-            data = json.load(infile)
+        data = load_data(args.input_file)
     except Exception as e:
-        print(f"Error reading input file: {e}")
+        print(e)
         sys.exit(1)
     
     # Prompt user to select a speaker to keep.
@@ -132,17 +141,90 @@ def main():
     filtered_data = [record for record in data if record.get("speaker_id") == selected_speaker]
     
     # Process the filtered data to create sentences.
-    processed_data = process_data(filtered_data)
+    processed_data = process_sentences(filtered_data)
     
     # Write the processed data to the output JSON file.
     try:
-        with open(args.output_file, "w", encoding="utf-8") as outfile:
-            json.dump(processed_data, outfile, indent=2)
+        save_data(processed_data, args.output_file)
     except Exception as e:
-        print(f"Error writing output file: {e}")
+        print(e)
         sys.exit(1)
     
     print(f"Processed data saved to {args.output_file}")
 
+def run_gui() -> None:
+    """Launch a small Tkinter GUI to process annotation files."""
+    import tkinter as tk
+    from tkinter import filedialog, messagebox
+
+    root = tk.Tk()
+    root.withdraw()
+
+    input_file = filedialog.askopenfilename(
+        title="Select input JSON", filetypes=[("JSON files", "*.json")]
+    )
+    if not input_file:
+        return
+
+    output_file = filedialog.asksaveasfilename(
+        title="Save output JSON",
+        defaultextension=".json",
+        filetypes=[("JSON files", "*.json")],
+    )
+    if not output_file:
+        return
+
+    try:
+        data = load_data(input_file)
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+        return
+
+    speaker_counts = {}
+    for rec in data:
+        sid = rec.get("speaker_id")
+        if sid:
+            speaker_counts[sid] = speaker_counts.get(sid, 0) + 1
+    speaker_counts = {
+        sid: count for sid, count in speaker_counts.items() if count >= 20
+    }
+    if not speaker_counts:
+        messagebox.showerror(
+            "Error", "No speakers with at least 20 occurrences found."
+        )
+        return
+
+    options = [f"{sid} ({count})" for sid, count in sorted(speaker_counts.items())]
+
+    def do_process():
+        selection = var.get()
+        if not selection:
+            messagebox.showerror("Error", "No speaker selected")
+            return
+        selected_id = selection.split()[0]
+        filtered = [r for r in data if r.get("speaker_id") == selected_id]
+        processed = process_sentences(filtered)
+        try:
+            save_data(processed, output_file)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            return
+        messagebox.showinfo(
+            "Success", f"Processed data saved to {output_file}"
+        )
+        root.destroy()
+
+    root.deiconify()
+    frame = tk.Frame(root)
+    frame.pack(padx=10, pady=10)
+    tk.Label(frame, text="Choose Speaker:").pack(side=tk.LEFT)
+    var = tk.StringVar(value=options[0])
+    tk.OptionMenu(frame, var, *options).pack(side=tk.LEFT)
+    tk.Button(frame, text="Process", command=do_process).pack(side=tk.LEFT, padx=5)
+    root.mainloop()
+
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1:
+        main()
+    else:
+        run_gui()
