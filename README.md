@@ -20,3 +20,14 @@ A super simple set of personal python files for an audio training pipeline.
 
 
 ![Alt text](workflow.png)
+
+## Sample JSON
+
+The file `tests/sample_invalid.json` demonstrates how `process_audio.py` skips segments
+with invalid start or end values. When you run the script with this file, it
+prints warnings for:
+
+- a segment with a negative start time
+- a segment where the end time is less than or equal to the start time
+
+Only the valid segment in the file will be processed.

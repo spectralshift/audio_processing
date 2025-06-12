@@ -70,9 +70,19 @@ def process_json_file(audio_path, json_path):
         except (ValueError, TypeError):
             print(f"Skipping segment {idx+1} in '{json_path}' due to invalid start/end values.")
             continue
+
+        # Validate basic boundaries for start and end
+        if start < 0 or end <= start:
+            print(
+                f"Skipping segment {idx+1} in '{json_path}': invalid time range (start={start}, end={end})."
+            )
+            continue
+
         duration = end - start
         if duration < MIN_DURATION:
-            print(f"Skipping segment {idx+1} in '{json_path}': duration {duration:.2f}s is less than MIN_DURATION ({MIN_DURATION}s).")
+            print(
+                f"Skipping segment {idx+1} in '{json_path}': duration {duration:.2f}s is less than MIN_DURATION ({MIN_DURATION}s)."
+            )
             continue
         valid_segments.append(segment)
 
