@@ -3,7 +3,6 @@ from tkinter import filedialog, messagebox
 import os
 import json
 import threading
-import multiprocessing
 import simpleaudio as sa
 from pydub import AudioSegment
 
@@ -17,7 +16,7 @@ def playback_function(snippet):
         )
         play_obj.wait_done()
     except Exception as e:
-        print("Error during audio playback in process:", e)
+        print("Error during audio playback:", e)
 
 class AnnotationApp:
     def __init__(self, master):
@@ -30,6 +29,7 @@ class AnnotationApp:
         self.json_file = None
         self.annotations = []
         self.current_index = 0
+        self.play_thread = None
 
         # Create the menu frame with three main buttons.
         self.menu_frame = tk.Frame(master)
@@ -221,9 +221,16 @@ class AnnotationApp:
 
         # Slice the preloaded audio data.
         snippet = self.audio_data[start_ms:end_ms]
-        
-        p = multiprocessing.Process(target=playback_function, args=(snippet,))
-        p.start()
+
+        def play():
+            playback_function(snippet)
+
+        # Ensure previous playback thread has finished to avoid leaks.
+        if self.play_thread and self.play_thread.is_alive():
+            self.play_thread.join()
+
+        self.play_thread = threading.Thread(target=play, daemon=True)
+        self.play_thread.start()
 
     def save_annotations(self):
         # Save the current transcript text into the annotations list.
