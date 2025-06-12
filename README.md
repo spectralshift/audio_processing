@@ -40,4 +40,3 @@ pip install -r requirements.txt
 
 The `tests` directory contains sample audio and annotations. The file `sample_invalid.json` demonstrates how `process_audio.py` reports segments with negative start times or end times before the start. Only valid segments are exported.
 
-![Workflow diagram](workflow.png)
