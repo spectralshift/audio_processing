@@ -21,7 +21,9 @@ rely on `ffmpeg` being installed and available on your `PATH`.
     
 7 - Copy the audio and the annotation file you wish to process (eg: good only) and place it into a new folder.
     
-8 - Run the process_audio.py script on the new folder. Note: this will split the file into the chunks in the annotation file.
+8 - Run the `process_audio.py` script on the new folder. This will split the file
+    into the chunks in the annotation file. Use the optional `--min-duration`
+    argument to control the minimum length (in seconds) of exported segments.
 
 
 ![Alt text](workflow.png)

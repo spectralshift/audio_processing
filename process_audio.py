@@ -4,9 +4,13 @@ import json
 import shutil
 import subprocess
 import re
+import argparse
 
-# Global minimum duration threshold in seconds
-MIN_DURATION = 0.75
+# Default minimum duration threshold in seconds
+DEFAULT_MIN_DURATION = 0.75
+
+# Runtime minimum duration threshold. This can be overridden via --min-duration
+MIN_DURATION = DEFAULT_MIN_DURATION
 
 def validate_json_data(data, json_filename):
     """
@@ -145,12 +149,22 @@ def main():
     - Expects a subfolder argument.
     - Validates that exactly one audio file exists in the folder.
     - Processes all JSON files in the folder sequentially.
+    - Allows overriding the minimum duration threshold.
     """
-    if len(sys.argv) != 2:
-        print("Usage: python process_audio.py <subfolder>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Process annotated audio files")
+    parser.add_argument("subfolder", help="Folder containing audio and JSON files")
+    parser.add_argument(
+        "--min-duration",
+        type=float,
+        default=DEFAULT_MIN_DURATION,
+        help="Minimum segment duration in seconds",
+    )
+    args = parser.parse_args()
 
-    subfolder = sys.argv[1]
+    global MIN_DURATION
+    MIN_DURATION = args.min_duration
+
+    subfolder = args.subfolder
     parent_dir = os.getcwd()
     process_dir = os.path.join(parent_dir, subfolder)
 
