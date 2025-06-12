@@ -23,7 +23,8 @@ rely on `ffmpeg` being installed and available on your `PATH`.
     
 8 - Run the `process_audio.py` script on the new folder. This will split the file
     into the chunks in the annotation file. Use the optional `--min-duration`
-    argument to control the minimum length (in seconds) of exported segments.
+    argument to control the minimum length (in seconds) of exported segments
+    (default is 0.75 seconds).
 
 
 ![Alt text](workflow.png)
