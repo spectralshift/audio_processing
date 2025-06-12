@@ -32,7 +32,7 @@ def validate_json_data(data, json_filename):
             return False
     return True
 
-def process_json_file(audio_path, json_path):
+def process_json_file(audio_path, json_path, verbose=False):
     """
     Processes a single JSON file with the provided audio file:
     - Validates the JSON file.
@@ -127,6 +127,14 @@ def process_json_file(audio_path, json_path):
             })
         except subprocess.CalledProcessError as e:
             print(f"Error processing segment {idx+1} in '{json_path}': {e}")
+            if e.stderr:
+                stderr_text = e.stderr.decode("utf-8", errors="replace").strip()
+                if stderr_text:
+                    print(stderr_text)
+            if verbose and e.stdout:
+                stdout_text = e.stdout.decode("utf-8", errors="replace").strip()
+                if stdout_text:
+                    print(stdout_text)
 
     # Save the metadata JSON file in the same directory as the audio files.
     metadata_path = os.path.join(out_dir, "metadata.json")
@@ -146,11 +154,16 @@ def main():
     - Validates that exactly one audio file exists in the folder.
     - Processes all JSON files in the folder sequentially.
     """
-    if len(sys.argv) != 2:
-        print("Usage: python process_audio.py <subfolder>")
-        sys.exit(1)
+    import argparse
 
-    subfolder = sys.argv[1]
+    parser = argparse.ArgumentParser(description="Split audio based on a JSON annotation file.")
+    parser.add_argument("subfolder", help="Subfolder containing the audio and JSON files")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose output")
+
+    args = parser.parse_args()
+
+    subfolder = args.subfolder
+    verbose = args.verbose
     parent_dir = os.getcwd()
     process_dir = os.path.join(parent_dir, subfolder)
 
@@ -188,7 +201,7 @@ def main():
     print(f"Found {len(json_files)} JSON file(s) to process.")
 
     for json_file in json_files:
-        process_json_file(audio_path, json_file)
+        process_json_file(audio_path, json_file, verbose=verbose)
 
 if __name__ == "__main__":
     main()
