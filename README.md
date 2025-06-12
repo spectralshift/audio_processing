@@ -12,6 +12,8 @@ rely on `ffmpeg` being installed and available on your `PATH`.
 3 - Now you have the annotation file, and the audio file. Take the annotation and remove excess details (see example)
 
 4 - Run 'process_elevenlabs_annotations.py', selecting the speaker you want to extract and form full sentences from; saves to a new file.
+    - Run with arguments for CLI usage: `python process_elevenlabs_annotations.py input.json output.json`.
+    - If you run the script without arguments, a small GUI opens to pick the files and choose the speaker interactively.
 
 5 - You now have a file of sentences from one speaker; take this file and the video and place into one directory. Rename JSON to annotation.json
 
